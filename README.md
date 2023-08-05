@@ -31,12 +31,6 @@ cargo install trunk
 trunk serve
 ```
 
----
-
-
----
-
-
 ## LICENSE
 Licensed under MIT <br>
 Read the [LICENSE](./LICENSE.md).
