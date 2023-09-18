@@ -1,11 +1,13 @@
 # URL Defanger
-Prevent unintentional visits to malicious websites by defanging URLs from your drafts.
+Prevent unintentional clicks to malicious websites by defanging URLs when analyzing malicious documents
 
 ## How to run this project locally?
 
-### Prerequisites
-- [ ] rust = **1.60**  
-- [ ] yew = **0.20**
+## Dependencies
+```yaml
+rust = 1.60  
+yew = 0.20
+```
 
 
 1. Download or clone the project. Unpack and *cd* into the directory
@@ -32,5 +34,4 @@ trunk serve
 ```
 
 ## LICENSE
-Licensed under MIT <br>
-Read the [LICENSE](./LICENSE.md).
+Licensed under MIT [LICENSE](./LICENSE.md).
