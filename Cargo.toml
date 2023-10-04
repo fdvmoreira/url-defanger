@@ -1,5 +1,5 @@
 [package]
-name = "url-defanger"
+name = "url_defanger"
 version = "0.1.0"
 edition = "2021"
 
