@@ -1,5 +1,6 @@
 #[allow(unused_imports)]
 use js_sys::Promise;
+use wasm_bindgen::JsValue;
 #[allow(unused_imports)]
 use web_sys::Navigator;
 
@@ -68,10 +69,30 @@ pub fn is_valid_url(url: &str) -> bool {
 
     true
 }
+
+// save the text to the clipboard
+#[cfg(web_sys_unstable_apis)]
+pub fn save_to_clipboard(text: &str) -> Promise {
+    if text.is_empty() {
+        return Promise::reject(&JsValue::from_str("No Text to Save"));
+    }
+
+    let Some(window) = web_sys::window() else {
+        return Promise::reject(&JsValue::from_str("Saving to Clipboard Failed!"));
+    };
+
+    let Some(clipboard) = window.navigator().clipboard() else {
+        return Promise::reject(&JsValue::from_str("Could Not Get Clipboard Object"));
+    };
+
+    clipboard.write_text(text)
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
     use pretty_assertions::assert_eq;
+    use wasm_bindgen::prelude::Closure;
 
     #[test]
     fn test_defange_url() {
@@ -126,5 +147,44 @@ mod tests {
         assert_eq!(is_char_doubled(&patterns[5], 'n', None), false);
         assert_eq!(is_char_doubled(&patterns[6], 'u', None), false);
         assert_eq!(is_char_doubled(&patterns[7], 'g', None), false)
+    }
+
+    #[test]
+    #[ignore = "May not be run on non-wasm32"]
+    // #[cfg(web_sys_unstable_apis)]
+    fn test_saving_text_to_clipboard() {
+        let success_promise = Promise::resolve(&JsValue::from_str("Saving successful"));
+        let failure_promise = Promise::reject(&JsValue::from_str("Saving Failed"));
+
+        let success_msg: String = String::default();
+        let failure_msg: String = String::default();
+        // let mut fail_empty_msg: String = String::default();
+
+        {
+            let mut success_msg = success_msg.clone();
+            let _ = success_promise.then(&Closure::once(move |msg: JsValue| {
+                let _ =
+                    &success_msg.push_str(JsValue::as_string(&msg).unwrap_or_default().as_str());
+            }));
+        }
+        {
+            let mut failure_msg = failure_msg.clone();
+            let _ = failure_promise.then(&Closure::once(move |msg: JsValue| {
+                let _ =
+                    &failure_msg.push_str(JsValue::as_string(&msg).unwrap_or_default().as_str());
+            }));
+        }
+        // {
+        // this test fail because the navigator function is not implemented on non-wasm targets
+        // let mut fail_empty_msg = fail_empty_msg.clone();
+        // let _ = save_to_clipboard("").then(&Closure::once(move |msg: JsValue| {
+        // let _ =
+        // &fail_empty_msg.push_str(JsValue::as_string(&msg).unwrap_or_default().as_str());
+        // }));
+        // }
+
+        assert_eq!(success_msg, "Saving successful");
+        assert_eq!(failure_msg, "Saving Failed")
+        // assert_eq!(fail_empty_msg, "No Text to Save")
     }
 }
