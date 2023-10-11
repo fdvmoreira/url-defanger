@@ -1,0 +1,68 @@
+version: 2.1
+
+executors:
+  my-container:
+    docker:
+      - image: cimg/rust:1.73.0-node
+
+jobs:
+  install-trunk:
+    executor: my-container
+    steps:
+      - setup-trunk-cmd
+         
+  build-prod-tailwindcss:
+    executor: my-container
+    steps:
+      - buil-tailwind-cmd
+
+  build-prod-wasm:
+    executor: my-container
+    steps:
+      - build-trunk-cmd
+
+  deploy-to-prod:
+    executor: my-container
+    steps:
+      - deploy-to-prod-cmd
+    
+  
+commands:
+  setup-trunk-cmd:
+    steps:
+      - run:
+          name: Install Trunk binary
+          command: cargo add trunk
+
+  setup-target-platform-cmd:
+    steps:
+      - run:
+          name: Install Target Platform
+          command: rustup target add wasm32-unknown-unknown
+
+  build-trunk-cmd:
+    steps:
+      - run:
+          name: Build Production wasm
+          command: RUSTFLAGS=--cfg=web_sys_unstable_apis trunk build --release
+
+  build-tailwind-cmd:
+    steps:
+      - run:
+          name: Build tailwindcss for production
+          command: npx tailwindcss -c tailwind.config.js -i input.css  -o tailwind.css --minify
+
+  deploy-to-prod-cmd:
+    steps:
+      - run:
+          name: Deploy the to production
+          command: git push --set-upstream orign release
+
+workflows:
+  build-app:
+    jobs:
+      - setup-target
+  deploy-to-github:
+    jobs:
+      - deploy-to-prod-cmd
+
