@@ -6,15 +6,20 @@ executors:
       - image: cimg/rust:1.73.0-node
 
 jobs:
+  setup-target-platform:
+    executor: my-container
+    steps:
+      - setup-target-platform-cmd
+
   install-trunk:
     executor: my-container
     steps:
       - setup-trunk-cmd
-         
+
   build-prod-tailwindcss:
     executor: my-container
     steps:
-      - buil-tailwind-cmd
+      - build-tailwind-cmd
 
   build-prod-wasm:
     executor: my-container
@@ -56,13 +61,16 @@ commands:
     steps:
       - run:
           name: Deploy the to production
-          command: git push --set-upstream orign release
+          command: git -v
 
 workflows:
   build-app:
     jobs:
-      - setup-target
+      - setup-target-platform
+      - install-trunk
+      - build-prod-tailwindcss
+      - build-prod-wasm
   deploy-to-github:
     jobs:
-      - deploy-to-prod-cmd
+      - deploy-to-prod
 
