@@ -88,5 +88,3 @@ workflows:
           context: GITHUB-CONTEXT
           requires:
             - install-deps-and-build
-          type: approval
-
