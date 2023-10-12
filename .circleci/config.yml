@@ -24,7 +24,7 @@ jobs:
           command: ls -al dist && mkdir -p workspace
       - run:
           name: Compress the output
-          command: tar -czvf dist.tar.gz dist/* && mv dist.tar.gz
+          command: tar -czvf dist.tar.gz dist/* && mv dist.tar.gz workspace/
       - persist_to_workspace:
           root: workspace
           paths:
