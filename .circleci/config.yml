@@ -45,7 +45,7 @@ commands:
     steps:
       - run:
           name: Install Trunk binary
-          command: cargo add trunk
+          command: cargo install trunk
       - run:
           name: List Cargo's Installed Binaries
           command: cargo install --list
