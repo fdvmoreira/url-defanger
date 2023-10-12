@@ -24,7 +24,7 @@ jobs:
           command: ls -al dist && mkdir -p workspace
       - run:
           name: Compress the output
-          command: tar -czvf workspace/dist.tar.gz
+          command: tar -czvf dist.tar.gz dist/* && mv dist.tar.gz
       - persist_to_workspace:
           root: workspace
           paths:
@@ -34,10 +34,10 @@ jobs:
     executor: my-container
     steps:
       - attach_workspace:
-          at: workspace
+          at: ~/app/workspace
       - run:
-          name: Uncompress the dist
-          command: mkdir dist && tar -xzf workspace/dist.tar.gz -C dist/
+          name: Uncompress the dist tar
+          command: tar -xzvf ./workspace/dist.tar.gz -C . 
       - deploy-to-prod-cmd
 
 commands:
@@ -83,12 +83,9 @@ commands:
       - run: 
           name: Production Artifacts
           command: ls -alR
-      - run:
-          name: Deploy to production
-          command: git -v && gh version
       - run: 
           name: Check Github Token
-          command: echo "Context->GH-token = ${GITHUB_TOKEN}" && gh auth token
+          command: echo Context->GH-token = ${GITHUB_TOKEN} && echo CLI-GH-Token `gh auth token`
       - run:
           name: Create release and upload files
           command: gh release create --draft ./dist/*
