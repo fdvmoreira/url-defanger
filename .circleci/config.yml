@@ -91,6 +91,10 @@ commands:
             #!/bin/bash
             # move into the repo
             cd repo
+            
+            # set basic identity
+            git config user.email "flaviomoreira@gmail.com"
+            git config user.name "Flavio Moreira"
           
             # add/view link to remote repo
             git remote -v
@@ -105,7 +109,7 @@ commands:
             git add . && git status
 
             # commit the file
-            git commit -m "Initial release" 
+            echo "-- Commiting the changes --" && git commit -m "Initial release" 
           
             # setup upstream
             git branch --set-upstream-to origin/release && git branch -a
