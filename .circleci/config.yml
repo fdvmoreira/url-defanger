@@ -7,52 +7,31 @@ executors:
       - image: cimg/rust:1.73.0-node
 
 jobs:
-  install-deps:
+  install-deps-and-build:
     executor: my-container
-    description: Install all dependencies needed to build the project
+    description: Install all dependencies and build the project
     steps:
       - checkout
       - setup-target-platform-cmd
       - setup-trunk-cmd
-
-  build-prod-tailwindcss:
-    executor: my-container
-    steps:
-      - checkout
       - build-tailwind-cmd
+      - build-wasm-cmd
+      - run:
+          name: List the distribution build
+          command: ls -al dist
       - persist_to_workspace:
-          root: .
+          root: dist
           paths:
-            - "tailwind.css"
-
-  build-prod-wasm:
-    executor: my-container
-    steps:
-      - attach_workspace:
-          at: /tmp/app
-      - build-trunk-cmd
-      - persist_to_workspace:
-          root: .
-          paths:
-            - "dist/"
+            - .
 
   deploy-to-prod:
     executor: my-container
     steps:
       - attach_workspace:
-          at: /tmp/app/dist
+          at: ~/app/dist
       - deploy-to-prod-cmd
 
 commands:
-  setup-trunk-cmd:
-    steps:
-      - run:
-          name: Install Trunk binary
-          command: cargo add trunk
-      - run:
-          name: List Cargo's Installed Binaries
-          command: cargo install --list
-
   setup-target-platform-cmd:
     steps:
       - run:
@@ -62,14 +41,14 @@ commands:
           name: List Installed Targets
           command: rustup target list --installed
 
-  build-trunk-cmd:
+  setup-trunk-cmd:
     steps:
       - run:
-          name: Build Production wasm
-          command: RUSTFLAGS=--cfg=web_sys_unstable_apis trunk build --release
+          name: Install Trunk binary
+          command: cargo add trunk
       - run:
-          name: List the output
-          command: ls && ls dist
+          name: List Cargo's Installed Binaries
+          command: cargo install --list
 
   build-tailwind-cmd:
     steps:
@@ -80,6 +59,15 @@ commands:
           name: List generated output
           command: ls -al | grep "tailwind.css"
 
+  build-wasm-cmd:
+    steps:
+      - run:
+          name: Build Production wasm
+          command: RUSTFLAGS=--cfg=web_sys_unstable_apis trunk build --release
+      - run:
+          name: List the output
+          command: ls && ls dist
+
   deploy-to-prod-cmd:
     steps:
       - run: 
@@ -88,19 +76,17 @@ commands:
       - run:
           name: Deploy to production
           command: git -v && gh version
+      - run: 
+          name: Check Github Token
+          command: echo $GITHUB_TOKEN
 
 workflows:
   build-and-deploy:
     jobs:
-      - install-deps
-      - build-prod-tailwindcss:
-          requires:
-            - install-deps
-      - build-prod-wasm:
-          requires:
-            - build-prod-tailwindcss
+      - install-deps-and-build
       - deploy-to-prod:
+          context: GITHUB-CONTEXT
           requires:
-            - build-prod-wasm
+            - install-deps-and-build
           type: approval
 
