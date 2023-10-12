@@ -112,10 +112,10 @@ commands:
             echo "-- Commiting the changes --" && git commit -m "Initial release" 
           
             # setup upstream
-            git branch --set-upstream-to origin/release && git branch -a
+            echo "-- Track remote branch --" && git branch --set-upstream-to origin/release && git branch -v -a
             
             # push the branch to remote repo
-            git push --set-upstream origin release
+            echo "-- pushing to origin --" && git push --set-upstream origin release
 
 
 workflows:
