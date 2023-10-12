@@ -2,7 +2,7 @@ version: 2.1
 
 executors:
   my-container:
-    working_directory: /app
+    working_directory: /tmp
     docker:
       - image: cimg/rust:1.73.0-node
 
@@ -28,7 +28,7 @@ jobs:
     executor: my-container
     steps:
       - attach_workspace:
-          at: /app
+          at: /tmp
       - build-trunk-cmd
       - persist_to_workspace:
           root: .
@@ -39,7 +39,7 @@ jobs:
     executor: my-container
     steps:
       - attach_workspace:
-          at: /app/dist
+          at: /tmp/dist
       - deploy-to-prod-cmd
 
 commands:
