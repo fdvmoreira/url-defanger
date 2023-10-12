@@ -2,75 +2,104 @@ version: 2.1
 
 executors:
   my-container:
+    working_directory: /app
     docker:
       - image: cimg/rust:1.73.0-node
 
 jobs:
-  setup-target-platform:
+  install-deps:
     executor: my-container
+    description: Install all dependencies needed to build the project
     steps:
       - setup-target-platform-cmd
-
-  install-trunk:
-    executor: my-container
-    steps:
       - setup-trunk-cmd
 
   build-prod-tailwindcss:
     executor: my-container
     steps:
+      - checkout
       - build-tailwind-cmd
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "tailwind.css"
 
   build-prod-wasm:
     executor: my-container
     steps:
+      - attach_workspace:
+          at: /app
       - build-trunk-cmd
+      - persist_to_workspace:
+          root: .
+          paths:
+            - "dist/"
 
   deploy-to-prod:
     executor: my-container
     steps:
+      - attach_workspace:
+          at: /app/dist
       - deploy-to-prod-cmd
-    
-  
+
 commands:
   setup-trunk-cmd:
     steps:
       - run:
           name: Install Trunk binary
           command: cargo add trunk
+      - run:
+          name: List Cargo's Installed Binaries
+          command: cargo install --list
 
   setup-target-platform-cmd:
     steps:
       - run:
           name: Install Target Platform
           command: rustup target add wasm32-unknown-unknown
+      - run:
+          name: List Installed Targets
+          command: rustup target list --installed
 
   build-trunk-cmd:
     steps:
       - run:
           name: Build Production wasm
           command: RUSTFLAGS=--cfg=web_sys_unstable_apis trunk build --release
+      - run:
+          name: List the output
+          command: ls && ls dist
 
   build-tailwind-cmd:
     steps:
       - run:
           name: Build tailwindcss for production
           command: npx tailwindcss -c tailwind.config.js -i input.css  -o tailwind.css --minify
+      - run:
+          name: List generated output
+          command: ls -al | grep "tailwind.css"
 
   deploy-to-prod-cmd:
     steps:
+      - run: 
+          name: Production Artifacts
+          command: ls dist
       - run:
-          name: Deploy the to production
-          command: git -v
+          name: Deploy to production
+          command: git -v && gh version
 
 workflows:
-  build-app:
+  build-and-deploy:
     jobs:
-      - setup-target-platform
-      - install-trunk
-      - build-prod-tailwindcss
-      - build-prod-wasm
-  deploy-to-github:
-    jobs:
-      - deploy-to-prod
+      - install-deps
+      - build-prod-tailwindcss:
+          requires:
+            - install-deps
+      - build-prod-wasm:
+          requires:
+            - build-prod-tailwindcss
+      - deploy-to-prod:
+          requires:
+            - build-prod-wasm
+          type: approval
 
