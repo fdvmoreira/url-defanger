@@ -1,5 +1,8 @@
 version: 2.1
 
+orbs:
+  gh: circleci/github-cli@2.2.0
+
 executors:
   my-container:
     working_directory: /tmp/app
@@ -20,7 +23,7 @@ jobs:
           name: List the distribution build
           command: ls -al dist
       - persist_to_workspace:
-          root: dist
+          root: dist/
           paths:
             - .
 
@@ -70,6 +73,7 @@ commands:
 
   deploy-to-prod-cmd:
     steps:
+      - gh/setup
       - run: 
           name: Production Artifacts
           command: ls -alR
