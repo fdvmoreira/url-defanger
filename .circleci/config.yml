@@ -83,12 +83,36 @@ commands:
       - run: 
           name: Production Artifacts
           command: ls -alR
-      - run: 
-          name: Check Github Token
-          command: echo Context->GH-token = ${GITHUB_TOKEN} && echo CLI-GH-Token `gh auth token`
+      - gh/clone:
+          dir: repo/
       - run:
-          name: Create release and upload files
-          command: gh release create --draft ./dist/*
+          name: Create new branch and all the stuff
+          command: |
+            #!/bin/bash
+            # move into the repo
+            cd repo
+          
+            # add/view link to remote repo
+            git remote -v
+          
+            # create new empty branch
+            git switch --orphan release
+          
+            #copy build into repo
+            cp ../dist/* ./ && ls -al
+          
+            # stage
+            git add . && git status
+
+            # commit the file
+            git commit -m "Initial release" 
+          
+            # setup upstream
+            git branch --set-upstream-to origin/release && git branch -a
+            
+            # push the branch to remote repo
+            git push --set-upstream origin release
+
 
 workflows:
   build-and-deploy:
