@@ -72,7 +72,7 @@ commands:
     steps:
       - run: 
           name: Production Artifacts
-          command: ls dist
+          command: ls -alR
       - run:
           name: Deploy to production
           command: git -v && gh version
