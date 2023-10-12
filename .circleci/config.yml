@@ -5,7 +5,7 @@ orbs:
 
 executors:
   my-container:
-    working_directory: /tmp/app
+    working_directory: ~/app
     docker:
       - image: cimg/rust:1.73.0-node
 
@@ -21,17 +21,23 @@ jobs:
       - build-wasm-cmd
       - run:
           name: List the distribution build
-          command: ls -al dist
+          command: ls -al dist && mkdir -p workspace
+      - run:
+          name: Compress the output
+          command: tar -czvf workspace/dist.tar.gz
       - persist_to_workspace:
-          root: dist/
+          root: workspace
           paths:
-            - .
+            - dist.tar.gz
 
   deploy-to-prod:
     executor: my-container
     steps:
       - attach_workspace:
-          at: ~/app/dist
+          at: workspace
+      - run:
+          name: Uncompress the dist
+          command: mkdir dist && tar -xzf workspace/dist.tar.gz -C dist/
       - deploy-to-prod-cmd
 
 commands:
@@ -82,7 +88,10 @@ commands:
           command: git -v && gh version
       - run: 
           name: Check Github Token
-          command: echo $GITHUB_TOKEN
+          command: echo "Context->GH-token = ${GITHUB_TOKEN}" && gh auth token
+      - run:
+          name: Create release and upload files
+          command: gh release create --draft ./dist/*
 
 workflows:
   build-and-deploy:
