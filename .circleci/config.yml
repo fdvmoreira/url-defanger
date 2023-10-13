@@ -79,6 +79,9 @@ commands:
 
   deploy-to-prod-cmd:
     steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "68:4a:67:4c:d2:c4:4f:3b:28:df:b0:ab:3a:2f:bc:29"
       - gh/setup
       - run: 
           name: Production Artifacts
@@ -88,7 +91,6 @@ commands:
       - run:
           name: Create new branch and all the stuff
           command: |
-            #!/bin/bash
             # move into the repo
             cd repo
             
@@ -112,10 +114,10 @@ commands:
             echo "-- Commiting the changes --" && git commit -m "Initial release" 
           
             # setup upstream
-            echo "-- Track remote branch --" && git branch --set-upstream-to origin/release && git branch -v -a
+            # echo "-- Track remote branch --" && git branch --set-upstream-to origin/release && git branch -v -a
             
             # push the branch to remote repo
-            echo "-- pushing to origin --" && git push --set-upstream origin release
+            echo "-- pushing to origin --" && git push --force --set-upstream origin release
 
 
 workflows:
@@ -123,6 +125,9 @@ workflows:
     jobs:
       - install-deps-and-build
       - deploy-to-prod:
-          context: GITHUB-CONTEXT
           requires:
             - install-deps-and-build
+          filters:
+            branches:
+              only:
+                main
