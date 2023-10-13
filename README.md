@@ -1,8 +1,13 @@
+
+##### CI Pipeline Status
+[![CircleCI](https://dl.circleci.com/status-badge/img/gh/fdvmoreira/url-defanger/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/fdvmoreira/url-defanger/tree/main)
+
+---
+
 # URL Defanger
 Prevent unintentional clicks to malicious websites by defanging URLs when analyzing malicious documents
 
-### CI Pipeline Status
-[![CircleCI](https://dl.circleci.com/status-badge/img/gh/fdvmoreira/url-defanger/tree/main.svg?style=svg)](https://dl.circleci.com/status-badge/redirect/gh/fdvmoreira/url-defanger/tree/main)
+
 
 
 ## How to run this project locally?
