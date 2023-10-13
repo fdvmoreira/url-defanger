@@ -72,7 +72,7 @@ commands:
     steps:
       - run:
           name: Build Production wasm
-          command: RUSTFLAGS=--cfg=web_sys_unstable_apis trunk build --release
+          command: RUSTFLAGS=--cfg=web_sys_unstable_apis trunk build --release --public-url "url-defanger/"
       - run:
           name: List the output
           command: ls && ls dist
