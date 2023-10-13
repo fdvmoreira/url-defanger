@@ -125,6 +125,7 @@ workflows:
     jobs:
       - install-deps-and-build
       - deploy-to-prod:
+          context: GITHUB-CONTEXT
           requires:
             - install-deps-and-build
           filters:
